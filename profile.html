@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Profile | CRUSHLY</title>
+<style>
+:root{--pink:#ff477e;--dark:#231522;--light:#fff0f5}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#fff7fa;color:var(--dark)}
+header{background:white;padding:16px 6%;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 12px #0000000d}
+.logo{font-size:27px;font-weight:900;color:var(--pink);text-decoration:none}
+nav a{margin-left:16px;text-decoration:none;color:var(--dark);font-weight:bold}
+main{max-width:680px;margin:35px auto;padding:0 16px}
+.card{background:white;padding:28px;border-radius:20px;box-shadow:0 8px 35px #4b12300d}
+h1{margin-top:0;text-align:center}
+.subtitle{text-align:center;color:#777;margin-bottom:25px}
+.avatar{width:120px;height:120px;border-radius:50%;object-fit:cover;background:var(--light);display:block;margin:0 auto 12px;border:4px solid #ffd0df}
+.upload{text-align:center;margin-bottom:22px}
+label{display:block;font-weight:bold;margin:16px 0 7px}
+input,textarea{width:100%;padding:13px;border:1px solid #e4dce1;border-radius:10px;font:inherit}
+textarea{min-height:110px;resize:vertical}
+button{border:0;border-radius:10px;padding:13px 18px;font-weight:bold;cursor:pointer}
+.primary{width:100%;background:var(--pink);color:white;margin-top:20px}
+.primary:disabled{opacity:.6;cursor:wait}
+#status{margin-top:15px;text-align:center;white-space:pre-wrap}
+.small{font-size:13px;color:#777}
+footer{text-align:center;padding:25px;color:#777;font-size:13px}
+@media(max-width:480px){header{padding:14px 4%}.logo{font-size:22px}nav a{margin-left:8px;font-size:13px}.card{padding:20px}}
+</style>
+</head>
+<body>
+<header>
+<a class="logo" href="index.html">CRUSHLY ❤️</a>
+<nav>
+<a href="dashboard.html">Discover</a>
+<a href="login.html" id="signInLink">Sign in</a>
+</nav>
+</header>
+
+<main>
+<section class="card">
+<h1>My Profile 💕</h1>
+<p class="subtitle">Tell other members a little about yourself.</p>
+
+<form id="profileForm">
+<div class="upload">
+<img id="avatarPreview" class="avatar"
+src="https://placehold.co/240x240/fff0f5/ff477e?text=Your+Photo"
+alt="Profile picture">
+<label for="avatarFile">Profile picture</label>
+<input id="avatarFile" type="file" accept="image/jpeg,image/png,image/webp">
+<p class="small">JPG, PNG or WebP. Maximum 3 MB.</p>
+</div>
+
+<label for="displayName">Display name</label>
+<input id="displayName" maxlength="60" required autocomplete="nickname">
+
+<label for="birthDate">Date of birth</label>
+<input id="birthDate" type="date" required>
+
+<label for="location">Location</label>
+<input id="location" maxlength="100" placeholder="e.g. Nairobi, Kenya">
+
+<label for="bio">About me</label>
+<textarea id="bio" maxlength="500" placeholder="Share a little about yourself..." ></textarea>
+<p class="small"><span id="bioCount">0</span>/500 characters</p>
+
+<button class="primary" id="saveButton" type="submit">Save My Profile</button>
+<p id="status" role="status"></p>
+</form>
+</section>
+</main>
+<footer>© <span id="year"></span> CRUSHLY. Connect with care. ❤️</footer>
+
+<script type="module">
+import { supabase } from "./js/supabase.js";
+
+const form = document.getElementById("profileForm");
+const statusBox = document.getElementById("status");
+const saveButton = document.getElementById("saveButton");
+const avatarFile = document.getElementById("avatarFile");
+const avatarPreview = document.getElementById("avatarPreview");
+const bio = document.getElementById("bio");
+let currentUser = null;
+let currentAvatarPath = null;
+let previewObjectUrl = null;
+
+document.getElementById("year").textContent = new Date().getFullYear();
+
+function showStatus(message, isError = false) {
+  statusBox.textContent = message;
+  statusBox.style.color = isError ? "#b42318" : "#167647";
+}
+
+function calculateAge(dateString) {
+  const birth = new Date(dateString + "T00:00:00");
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  if (
+    today.getMonth() < birth.getMonth() ||
+    (today.getMonth() === birth.getMonth() &&
+      today.getDate() < birth.getDate())
+  ) age--;
+  return age;
+}
+
+bio.addEventListener("input", () => {
+  document.getElementById("bioCount").textContent = bio.value.length;
+});
+
+avatarFile.addEventListener("change", () => {
+  const file = avatarFile.files[0];
+  if (!file) return;
+
+  if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+    avatarFile.value = "";
+    showStatus("Choose a JPG, PNG, or WebP image.", true);
+    return;
+  }
+  if (file.size > 3 * 1024 * 1024) {
+    avatarFile.value = "";
+    showStatus("Your image must be 3 MB or smaller.", true);
+    return;
+  }
+
+  if (previewObjectUrl) URL.revokeObjectURL(previewObjectUrl);
+  previewObjectUrl = URL.createObjectURL(file);
+  avatarPreview.src = previewObjectUrl;
+});
+
+async function loadProfile() {
+  const { data, error } = await supabase.auth.getSession();
+  if (error || !data.session) {
+    location.replace("login.html");
+    return;
+  }
+
+  currentUser = data.session.user;
+  document.getElementById("signInLink").textContent = "Sign out";
+  document.getElementById("signInLink").href = "#";
+
+  document.getElementById("signInLink").addEventListener("click", async (event) => {
+    event.preventDefault();
+    await supabase.auth.signOut();
+    location.replace("login.html");
+  });
+
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("display_name,birth_date,location,bio,avatar_url")
+    .eq("id", currentUser.id)
+    .maybeSingle();
+
+  if (profileError) {
+    showStatus("Could not load your profile. Check the Supabase profiles table and permissions.", true);
+    return;
+  }
+
+  if (profile) {
+    document.getElementById("displayName").value = profile.display_name || "";
+    document.getElementById("birthDate").value = profile.birth_date || "";
+    document.getElementById("location").value = profile.location || "";
+    bio.value = profile.bio || "";
+    document.getElementById("bioCount").textContent = bio.value.length;
+    if (profile.avatar_url) {
+      avatarPreview.src = profile.avatar_url;
+      currentAvatarPath = profile.avatar_url;
+    }
+  }
+}
+
+form.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (!currentUser) return;
+
+  const displayName = document.getElementById("displayName").value.trim();
+  const birthDate = document.getElementById("birthDate").value;
+  const locationText = document.getElementById("location").value.trim();
+  const bioText = bio.value.trim();
+
+  if (!displayName || !birthDate) {
+    showStatus("Please enter your display name and date of birth.", true);
+    return;
+  }
+
+  const age = calculateAge(birthDate);
+  if (!Number.isFinite(age) || age < 18 || age > 120) {
+    showStatus("CRUSHLY is for adults aged 18 and above. Please check your date of birth.", true);
+    return;
+  }
+
+  saveButton.disabled = true;
+  showStatus("Saving your profile...");
+
+  try {
+    let avatarUrl = currentAvatarPath;
+
+    const file = avatarFile.files[0];
+    if (file) {
+      const extension = file.type === "image/png" ? "png" :
+                        file.type === "image/webp" ? "webp" : "jpg";
+      const path = `${currentUser.id}/profile.${extension}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("profile-photos")
+        .upload(path, file, { upsert: true, contentType: file.type });
+
+      if (uploadError) {
+        throw new Error("Photo upload failed. Create the profile-photos storage bucket in Supabase and check its upload policies, then try again.");
+      }
+
+      const { data: urlData } = supabase.storage
+        .from("profile-photos")
+        .getPublicUrl(path);
+
+      avatarUrl = urlData.publicUrl;
+      currentAvatarPath = avatarUrl;
+      avatarPreview.src = avatarUrl;
+    }
+
+    const { error: saveError } = await supabase.from("profiles").upsert({
+      id: currentUser.id,
+      display_name: displayName,
+      birth_date: birthDate,
+      location: locationText,
+      bio: bioText,
+      avatar_url: avatarUrl,
+      updated_at: new Date().toISOString()
+    });
+
+    if (saveError) throw saveError;
+    showStatus("Your profile has been saved successfully! ❤️");
+  } catch (error) {
+    showStatus(error.message || "Could not save your profile. Please try again.", true);
+  } finally {
+    saveButton.disabled = false;
+  }
+});
+
+loadProfile().catch(() => {
+  showStatus("Unable to connect to CRUSHLY. Check your Supabase configuration and internet connection.", true);
+});
+</script>
+</body>
+</html>
