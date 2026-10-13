@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Discover Matches | CRUSHLY</title>
+<style>
+:root{--pink:#ff397b;--purple:#762bdb;--bg:#fff7fa;--text:#292338}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:var(--text)}
+header{background:white;padding:17px 6%;display:flex;align-items:center;justify-content:space-between;gap:15px;box-shadow:0 2px 12px #0000000b;position:sticky;top:0;z-index:5}
+.logo{font-size:27px;font-weight:900;color:var(--pink);letter-spacing:1px}
+nav{display:flex;gap:17px;flex-wrap:wrap}
+nav a{color:#51485f;text-decoration:none;font-size:14px;font-weight:bold}
+nav a:hover{color:var(--pink)}
+main{max-width:1200px;margin:auto;padding:30px 20px}
+.hero{background:linear-gradient(120deg,#ff397b,#8b35d9);color:white;padding:30px;border-radius:22px;margin-bottom:25px}
+.hero h1{margin:0 0 10px;font-size:clamp(26px,5vw,40px)}
+.hero p{margin:0;line-height:1.6}
+.toolbar{display:flex;gap:12px;flex-wrap:wrap;margin:20px 0}
+input,select{padding:13px;border:1px solid #eadde5;border-radius:12px;background:white;font-size:15px}
+input{flex:1;min-width:180px}
+button,.button{border:0;border-radius:11px;padding:12px 17px;background:var(--pink);color:white;font-weight:bold;cursor:pointer;text-decoration:none;display:inline-block}
+button:hover,.button:hover{opacity:.88}
+#status{padding:12px 0;color:#665a6c}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:22px}
+.card{background:white;border-radius:18px;overflow:hidden;box-shadow:0 5px 22px #42213a0d;border:1px solid #f3e7ee}
+.photo{width:100%;height:260px;object-fit:cover;background:#f3e7ee;display:block}
+.details{padding:17px}
+.name{font-size:20px;font-weight:800;margin:0 0 8px}
+.meta{color:#786b7b;font-size:13px;margin:6px 0}
+.bio{font-size:14px;line-height:1.5;min-height:42px;overflow-wrap:anywhere}
+.actions{display:flex;gap:8px;margin-top:15px}
+.actions a{flex:1;text-align:center;font-size:13px;padding:11px 6px}
+.secondary{background:#fce6ef;color:#b7225b}
+.empty{background:white;padding:25px;border-radius:15px}
+footer{text-align:center;color:#8a7c8c;padding:30px 15px;font-size:13px}
+@media(max-width:550px){header{padding:14px;align-items:flex-start;flex-direction:column}nav{gap:13px}main{padding:20px 13px}.photo{height:290px}.hero{padding:23px}}
+.like-button{flex:1;text-align:center;font-size:13px;padding:11px 6px;border:0;border-radius:11px;background:#fce6ef;color:#b7225b;font-weight:bold;cursor:pointer}.like-button.liked{background:#ff397b;color:white}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">💗 CRUSHLY</div>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="profile.html">My Profile</a>
+    <a href="messages.html">Messages</a>
+    <a href="matches.html">💕 My Matches</a>
+  </nav>
+</header>
+
+<main>
+  <section class="hero">
+    <h1>Find your kind of connection 💕</h1>
+    <p>Discover people, explore their stories, and start a conversation. Your next connection could be one profile away.</p>
+  </section>
+
+  <div class="toolbar">
+    <input id="search" type="search" placeholder="Search names, locations or bios...">
+    <select id="sort">
+      <option value="newest">Recently joined</option>
+      <option value="name">Name A–Z</option>
+    </select>
+    <button id="refresh">Refresh profiles</button>
+  </div>
+
+  <p id="status">Loading profiles...</p>
+  <section id="profiles" class="grid"></section>
+</main>
+
+<footer>CRUSHLY © 2026 · Be kind, be respectful, and stay safe online.</footer>
+
+<script type="module">
+import { supabase } from './js/supabase.js';
+
+const grid = document.getElementById('profiles');
+const status = document.getElementById('status');
+const search = document.getElementById('search');
+const sort = document.getElementById('sort');
+
+let allProfiles = [];
+let currentUserId = null;
+
+function escapeHTML(value='') {
+  return String(value).replace(/[&<>"']/g, c => ({
+    '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+  })[c]);
+}
+
+function ageFromDate(date) {
+  if (!date) return null;
+  const birth = new Date(date + 'T00:00:00');
+  if (Number.isNaN(birth.getTime())) return null;
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  const beforeBirthday =
+    today.getMonth() < birth.getMonth() ||
+    (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate());
+  if (beforeBirthday) age--;
+  return age >= 18 && age <= 120 ? age : null;
+}
+
+async function photoURL(path) {
+  if (!path) return '';
+  // Public URLs work for public buckets; signed URLs support private buckets.
+  if (/^https?:\/\//i.test(path)) return path;
+
+  const { data, error } = await supabase.storage
+    .from('profile-photos')
+    .createSignedUrl(path, 3600);
+
+  if (error) {
+    console.warn('Could not load profile photo:', error.message);
+    return '';
+  }
+  return data?.signedUrl || '';
+}
+
+function render() {
+  const term = search.value.trim().toLowerCase();
+  let list = allProfiles.filter(p => {
+    const age = ageFromDate(p.birth_date);
+    const searchable = [p.display_name, p.location, p.bio].join(' ').toLowerCase();
+    return searchable.includes(term) && (age === null || age >= 18);
+  });
+
+  if (sort.value === 'name') {
+    list.sort((a,b) => (a.display_name || '').localeCompare(b.display_name || ''));
+  } else {
+    list.sort((a,b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+  }
+
+  grid.innerHTML = '';
+
+  if (!list.length) {
+    grid.innerHTML = '<div class="empty">No profiles found. Try another search, or check back later. 💗</div>';
+    return;
+  }
+
+  for (const p of list) {
+    const age = ageFromDate(p.birth_date);
+    const photo = p.photoURL || '';
+    const card = document.createElement('article');
+    card.className = 'card';
+
+    const img = document.createElement('img');
+    img.className = 'photo';
+    img.alt = 'Member profile photo';
+    img.loading = 'lazy';
+    img.src = photo || 'https://placehold.co/600x700/fce6ef/762bdb?text=CRUSHLY';
+    img.onerror = () => { img.onerror = null; img.src = 'https://placehold.co/600x700/fce6ef/762bdb?text=CRUSHLY'; };
+    card.appendChild(img);
+
+    const details = document.createElement('div');
+    details.className = 'details';
+    details.innerHTML = `
+      <h2 class="name">${escapeHTML(p.display_name || 'CRUSHLY Member')}${age ? ', ' + age : ''}</h2>
+      <p class="meta">📍 ${escapeHTML(p.location || 'Location not provided')}</p>
+      <p class="bio">${escapeHTML(p.bio || 'This member has not added a bio yet.')}</p>
+      <div class="actions">
+        <a class="button" href="view-profile.html?id=${encodeURIComponent(p.id)}">View profile</a>
+        <button class="like-button secondary" data-like-id="${escapeHTML(p.id)}" type="button">❤️ Like</button>
+        <a class="button secondary" href="messages.html">Message</a>
+      </div>`;
+    card.appendChild(details);
+    grid.appendChild(card);
+  }
+}
+
+async function loadProfiles() {
+  status.textContent = 'Loading profiles...';
+  grid.innerHTML = '';
+
+  try {
+    const { data: authData, error: authError } = await supabase.auth.getUser();
+    if (authError) throw authError;
+    currentUserId = authData.user?.id || null;
+
+    if (!currentUserId) {
+      status.textContent = 'Please sign in to discover CRUSHLY members.';
+      grid.innerHTML = '<div class="empty"><a class="button" href="login.html">Sign in</a> &nbsp; <a class="button secondary" href="signup.html">Create account</a></div>';
+      return;
+    }
+
+    // Select only profile fields needed for member discovery.
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id,display_name,birth_date,location,bio,avatar_url,created_at')
+      .neq('id', currentUserId)
+      .limit(100);
+
+    if (error) throw error;
+
+    allProfiles = (data || []).filter(p => ageFromDate(p.birth_date) !== null);
+
+    await Promise.all(allProfiles.map(async p => {
+      p.photoURL = await photoURL(p.avatar_url);
+    }));
+
+    status.textContent = `${allProfiles.length} member profile${allProfiles.length === 1 ? '' : 's'} found`;
+    render();
+  } catch (error) {
+    console.error(error);
+    status.textContent = 'Could not load profiles. Check your profiles table columns and Supabase access policies.';
+    grid.innerHTML = '<div class="empty">Please make sure you are signed in and that the profiles table allows authenticated members to read discoverable profiles.</div>';
+  }
+}
+
+search.addEventListener('input', render);
+sort.addEventListener('change', render);
+document.getElementById('refresh').addEventListener('click', loadProfiles);
+
+loadProfiles();
+</script>
+
+<script>
+document.getElementById('profiles').addEventListener('click', async function(event) {
+  const button = event.target.closest('.like-button');
+  if (!button) return;
+
+  const likedId = button.dataset.likeId;
+  if (!likedId) return;
+
+  button.disabled = true;
+  const originalText = button.textContent;
+  button.textContent = 'Saving...';
+
+  try {
+    const { data: authData, error: authError } = await supabase.auth.getUser();
+    if (authError) throw authError;
+    if (!authData.user) throw new Error('Please sign in first.');
+
+    const userId = authData.user.id;
+    if (userId === likedId) throw new Error('You cannot like your own profile.');
+
+    const { error: likeError } = await supabase
+      .from('profile_likes')
+      .upsert(
+        { liker_id: userId, liked_id: likedId },
+        { onConflict: 'liker_id,liked_id', ignoreDuplicates: true }
+      );
+
+    if (likeError) throw likeError;
+
+    const { data: reciprocal, error: reciprocalError } = await supabase
+      .from('profile_likes')
+      .select('id')
+      .eq('liker_id', likedId)
+      .eq('liked_id', userId)
+      .maybeSingle();
+
+    if (reciprocalError) throw reciprocalError;
+
+    if (reciprocal) {
+      button.textContent = '💕 It’s a Match!';
+      alert('It’s a match! You both liked each other. 💕');
+    } else {
+      button.textContent = '❤️ Liked';
+      alert('Like sent! If they like you back, you’ll have a match. ❤️');
+    }
+
+    button.classList.add('liked');
+  } catch (error) {
+    console.error(error);
+    button.textContent = originalText;
+    alert(error.message || 'Could not save your like. Please try again.');
+  } finally {
+    button.disabled = false;
+  }
+});
+</script>
+
+</body>
+</html>

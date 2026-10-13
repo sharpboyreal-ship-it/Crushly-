@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#762bdb">
+  <title>Video Calls | CRUSHLY</title>
+  <style>
+    :root {
+      --purple: #762bdb;
+      --pink: #f0448a;
+      --dark: #21152f;
+      --muted: #756b80;
+      --bg: #f8f4fc;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--dark);
+    }
+
+    header {
+      background: white;
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 12px #21152f12;
+    }
+
+    .brand {
+      font-size: 23px;
+      font-weight: 800;
+      color: var(--purple);
+      text-decoration: none;
+    }
+
+    .back {
+      color: var(--purple);
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    main {
+      max-width: 1000px;
+      margin: 24px auto;
+      padding: 0 16px 32px;
+    }
+
+    .panel {
+      background: white;
+      border-radius: 22px;
+      padding: 22px;
+      box-shadow: 0 10px 35px #21152f10;
+    }
+
+    h1 { margin: 0 0 8px; }
+
+    .intro {
+      color: var(--muted);
+      line-height: 1.5;
+      margin-top: 0;
+    }
+
+    .videos {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 20px;
+    }
+
+    .video-box {
+      position: relative;
+      min-height: 220px;
+      aspect-ratio: 4 / 3;
+      background: #21152f;
+      border-radius: 17px;
+      overflow: hidden;
+    }
+
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    #localVideo { transform: scaleX(-1); }
+
+    .video-label {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      color: white;
+      background: #0009;
+      border-radius: 8px;
+      padding: 7px 10px;
+      font-size: 13px;
+    }
+
+    .status {
+      margin: 18px 0;
+      padding: 13px;
+      border-radius: 12px;
+      background: #f3eaff;
+      color: #5420a1;
+      overflow-wrap: anywhere;
+      line-height: 1.45;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    button, .button {
+      border: 0;
+      border-radius: 12px;
+      padding: 13px 17px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 14px;
+    }
+
+    button:disabled { opacity: .5; cursor: not-allowed; }
+
+    .primary { background: var(--purple); color: white; }
+    .pink { background: var(--pink); color: white; }
+    .secondary { background: #f0e8fa; color: var(--purple); }
+    .danger { background: #ffe7e7; color: #a11b1b; }
+
+    .field { margin-top: 14px; }
+
+    label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 7px;
+    }
+
+    input {
+      width: 100%;
+      padding: 13px;
+      border: 1px solid #ded3ec;
+      border-radius: 11px;
+      font: inherit;
+    }
+
+    .small {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    #incomingBox {
+      display: none;
+      border: 1px solid #e5d6fa;
+      background: #fbf8ff;
+      padding: 15px;
+      border-radius: 14px;
+      margin-top: 15px;
+    }
+
+    @media (max-width: 600px) {
+      main { margin-top: 14px; padding: 0 10px 22px; }
+      .panel { padding: 15px; }
+      .videos { grid-template-columns: 1fr; }
+      .video-box { min-height: 230px; }
+      button, .button { flex: 1; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a class="brand" href="index.html">CRUSHLY 💗</a>
+    <a class="back" href="discover.html">← Discover</a>
+  </header>
+
+  <main>
+    <section class="panel">
+      <h1>Video calls 🎥</h1>
+      <p class="intro">
+        Connect face-to-face with another adult CRUSHLY member.
+        Both people must allow camera and microphone access.
+      </p>
+
+      <div class="field">
+        <label for="memberId">Member's user ID</label>
+        <input id="memberId" type="text" placeholder="Paste the member's UUID">
+      </div>
+
+      <div class="controls">
+        <button id="startCall" class="primary">🎥 Start video call</button>
+        <button id="cameraButton" class="secondary" disabled>Turn camera off</button>
+        <button id="micButton" class="secondary" disabled>Mute microphone</button>
+        <button id="endCall" class="danger" disabled>End call</button>
+      </div>
+
+      <div id="incomingBox">
+        <strong>💗 Incoming video call</strong>
+        <p id="incomingText">A member is calling you.</p>
+        <div class="controls">
+          <button id="acceptCall" class="primary">Accept</button>
+          <button id="declineCall" class="danger">Decline</button>
+        </div>
+      </div>
+
+      <div class="videos">
+        <div class="video-box">
+          <video id="localVideo" autoplay playsinline muted></video>
+          <span class="video-label">You</span>
+        </div>
+        <div class="video-box">
+          <video id="remoteVideo" autoplay playsinline></video>
+          <span class="video-label">Other member</span>
+        </div>
+      </div>
+
+      <div id="status" class="status" role="status" aria-live="polite">
+        Checking your CRUSHLY session...
+      </div>
+
+      <p class="small">
+        For best results, use HTTPS and allow camera/microphone permissions.
+        Video calls require a working internet connection. Some networks need
+        a TURN relay server for peer-to-peer media to connect.
+      </p>
+
+      <p class="small">
+        The 10-minute timer is a user-interface limit, not secure payment
+        enforcement. Paid calls must be authorized by a trusted server after
+        verifying the M-Pesa payment.
+      </p>
+    </section>
+  </main>
+
+  <script type="module">
+    import { supabase } from './js/supabase.js';
+
+    const $ = id => document.getElementById(id);
+    const statusBox = $('status');
+    const memberIdInput = $('memberId');
+    const startButton = $('startCall');
+    const acceptButton = $('acceptCall');
+    const declineButton = $('declineCall');
+    const endButton = $('endCall');
+    const cameraButton = $('cameraButton');
+    const micButton = $('micButton');
+    const incomingBox = $('incomingBox');
+    const localVideo = $('localVideo');
+    const remoteVideo = $('remoteVideo');
+
+    let user = null;
+    let peer = null;
+    let localStream = null;
+    let activeCallId = null;
+    let activePeerId = null;
+    let incomingOffer = null;
+    let realtimeChannel = null;
+    let timer = null;
+    let callStartedAt = null;
+    let ending = false;
+    const queuedCandidates = [];
+
+    const rtcConfig = {
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' }
+      ]
+    };
+
+    function setStatus(message) {
+      statusBox.textContent = message;
+    }
+
+    function validUUID(value) {
+      return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+    }
+
+    function updateControls(inCall) {
+      endButton.disabled = !inCall;
+      cameraButton.disabled = !inCall || !localStream;
+      micButton.disabled = !inCall || !localStream;
+      startButton.disabled = inCall;
+    }
+
+    async function getMedia() {
+      if (!navigator.mediaDevices?.getUserMedia) {
+        throw new Error('Camera access needs HTTPS or localhost in a supported browser.');
+      }
+
+      if (!localStream) {
+        localStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'user' },
+          audio: true
+        });
+        localVideo.srcObject = localStream;
+      }
+
+      return localStream;
+    }
+
+    function makePeer() {
+      peer = new RTCPeerConnection(rtcConfig);
+
+      localStream.getTracks().forEach(track => {
+        peer.addTrack(track, localStream);
+      });
+
+      peer.ontrack = event => {
+        remoteVideo.srcObject = event.streams[0];
+      };
+
+      peer.onicecandidate = async event => {
+        if (!event.candidate || !activeCallId || !activePeerId) return;
+
+        try {
+          await sendSignal('ice-candidate', event.candidate.toJSON());
+        } catch (error) {
+          console.error('Could not send network candidate:', error);
+          setStatus('A network connection update failed. Check your connection.');
+        }
+      };
+
+      peer.onconnectionstatechange = () => {
+        if (!peer) return;
+        if (peer.connectionState === 'connected') {
+          if (!callStartedAt) {
+            callStartedAt = Date.now();
+            startTimer();
+          }
+          setStatus('Connected securely through WebRTC. Call time: ' + formatTime());
+        } else if (peer.connectionState === 'failed') {
+          setStatus('Connection failed. Your network may require a TURN relay server.');
+        } else if (peer.connectionState === 'disconnected') {
+          setStatus('Connection interrupted. Trying to reconnect...');
+        }
+      };
+
+      return peer;
+    }
+
+    async function sendSignal(type, payload = null) {
+      if (!user || !activePeerId || !activeCallId) {
+        throw new Error('Call participants are not ready.');
+      }
+
+      const { error } = await supabase.from('call_signals').insert({
+        sender_id: user.id,
+        recipient_id: activePeerId,
+        call_id: activeCallId,
+        signal_type: type,
+        payload
+      });
+
+      if (error) throw error;
+    }
+
+    async function processSignal(row) {
+      if (!user || row.recipient_id !== user.id) return;
+
+      if (row.signal_type === 'offer' && !activeCallId) {
+        activeCallId = row.call_id;
+        activePeerId = row.sender_id;
+        incomingOffer = row.payload;
+        $('incomingText').textContent = 'Incoming call from member ' + row.sender_id;
+        incomingBox.style.display = 'block';
+        memberIdInput.value = row.sender_id;
+        setStatus('Incoming call. Accept only if you recognize this member.');
+        return;
+      }
+
+      if (row.call_id !== activeCallId || row.sender_id !== activePeerId) return;
+
+      try {
+        if (row.signal_type === 'answer' && peer && peer.signalingState === 'have-local-offer') {
+          await peer.setRemoteDescription(new RTCSessionDescription(row.payload));
+          while (queuedCandidates.length) {
+            await peer.addIceCandidate(new RTCIceCandidate(queuedCandidates.shift()));
+          }
+        } else if (row.signal_type === 'ice-candidate' && row.payload) {
+          if (peer?.remoteDescription) {
+            await peer.addIceCandidate(new RTCIceCandidate(row.payload));
+          } else {
+            queuedCandidates.push(row.payload);
+          }
+        } else if (row.signal_type === 'hangup' || row.signal_type === 'decline') {
+          setStatus(row.signal_type === 'decline' ? 'The other member declined the call.' : 'The other member ended the call.');
+          await cleanup(false);
+        }
+      } catch (error) {
+        console.error('Signal processing failed:', error);
+        setStatus('Could not process a call update. Please end the call and try again.');
+      }
+    }
+
+    function startTimer() {
+      clearInterval(timer);
+      timer = setInterval(() => {
+        const remaining = Math.max(0, 600 - Math.floor((Date.now() - callStartedAt) / 1000));
+        setStatus('Connected. Time remaining: ' + Math.floor(remaining / 60) + ':' + String(remaining % 60).padStart(2, '0'));
+
+        if (remaining <= 0) {
+          endCall('hangup', 'The 10-minute demo timer has ended the call.');
+        }
+      }, 1000);
+    }
+
+    function formatTime() {
+      if (!callStartedAt) return '10:00';
+      const remaining = Math.max(0, 600 - Math.floor((Date.now() - callStartedAt) / 1000));
+      return Math.floor(remaining / 60) + ':' + String(remaining % 60).padStart(2, '0');
+    }
+
+    async function cleanup(showMessage = true) {
+      clearInterval(timer);
+      timer = null;
+      callStartedAt = null;
+
+      if (peer) {
+        peer.onicecandidate = null;
+        peer.ontrack = null;
+        peer.close();
+      }
+      peer = null;
+
+      if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+      }
+      localStream = null;
+      localVideo.srcObject = null;
+      remoteVideo.srcObject = null;
+
+      activeCallId = null;
+      activePeerId = null;
+      incomingOffer = null;
+      queuedCandidates.length = 0;
+      incomingBox.style.display = 'none';
+      cameraButton.textContent = 'Turn camera off';
+      micButton.textContent = 'Mute microphone';
+      updateControls(false);
+
+      if (showMessage) setStatus('Call ended.');
+    }
+
+    async function endCall(signalType = 'hangup', message = 'Call ended.') {
+      if (ending) return;
+      ending = true;
+
+      try {
+        if (activeCallId && activePeerId && user) {
+          await sendSignal(signalType);
+        }
+      } catch (error) {
+        console.warn('Could not notify the other member:', error.message);
+      } finally {
+        await cleanup(false);
+        setStatus(message);
+        ending = false;
+      }
+    }
+
+    startButton.addEventListener('click', async () => {
+      const recipient = memberIdInput.value.trim();
+
+      if (!validUUID(recipient)) {
+        setStatus('Enter a valid member UUID from their profile or account details.');
+        return;
+      }
+
+      if (recipient === user.id) {
+        setStatus('You cannot call your own account.');
+        return;
+      }
+
+      try {
+        startButton.disabled = true;
+        setStatus('Requesting camera and microphone permission...');
+        await getMedia();
+
+        activeCallId = crypto.randomUUID();
+        activePeerId = recipient;
+        makePeer();
+        updateControls(true);
+
+        const offer = await peer.createOffer();
+        await peer.setLocalDescription(offer);
+        await sendSignal('offer', peer.localDescription.toJSON());
+
+        setStatus('Calling member. Keep this page open while waiting for an answer.');
+      } catch (error) {
+        console.error(error);
+        await cleanup(false);
+        setStatus('Could not start call: ' + (error.message || 'Unknown error'));
+      } finally {
+        startButton.disabled = false;
+      }
+    });
+
+    acceptButton.addEventListener('click', async () => {
+      if (!incomingOffer || !activeCallId || !activePeerId) return;
+
+      try {
+        acceptButton.disabled = true;
+        setStatus('Starting camera and microphone...');
+        await getMedia();
+        makePeer();
+        updateControls(true);
+
+        await peer.setRemoteDescription(new RTCSessionDescription(incomingOffer));
+        while (queuedCandidates.length) {
+          await peer.addIceCandidate(new RTCIceCandidate(queuedCandidates.shift()));
+        }
+
+        const answer = await peer.createAnswer();
+        await peer.setLocalDescription(answer);
+        await sendSignal('answer', peer.localDescription.toJSON());
+
+        incomingBox.style.display = 'none';
+        setStatus('Call accepted. Connecting...');
+      } catch (error) {
+        console.error(error);
+        await endCall('hangup', 'Could not accept the call: ' + error.message);
+      } finally {
+        acceptButton.disabled = false;
+      }
+    });
+
+    declineButton.addEventListener('click', async () => {
+      await endCall('decline', 'You declined the incoming call.');
+    });
+
+    endButton.addEventListener('click', () => endCall());
+
+    cameraButton.addEventListener('click', () => {
+      const track = localStream?.getVideoTracks()[0];
+      if (!track) return;
+      track.enabled = !track.enabled;
+      cameraButton.textContent = track.enabled ? 'Turn camera off' : 'Turn camera on';
+    });
+
+    micButton.addEventListener('click', () => {
+      const track = localStream?.getAudioTracks()[0];
+      if (!track) return;
+      track.enabled = !track.enabled;
+      micButton.textContent = track.enabled ? 'Mute microphone' : 'Unmute microphone';
+    });
+
+    window.addEventListener('beforeunload', () => {
+      clearInterval(timer);
+      if (peer) peer.close();
+      if (localStream) localStream.getTracks().forEach(track => track.stop());
+    });
+
+    async function initialize() {
+      const { data, error } = await supabase.auth.getUser();
+      if (error || !data.user) {
+        setStatus('Please sign in to CRUSHLY before using video calls.');
+        startButton.disabled = true;
+        return;
+      }
+
+      user = data.user;
+
+      const queryRecipient = new URLSearchParams(location.search).get('recipient');
+      if (queryRecipient) memberIdInput.value = queryRecipient;
+
+      realtimeChannel = supabase
+        .channel('crushly-call-signals-' + user.id)
+        .on('postgres_changes', {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'call_signals'
+        }, payload => {
+          processSignal(payload.new);
+        })
+        .subscribe((state) => {
+          if (state === 'SUBSCRIBED') {
+            setStatus('Ready. Enter a member UUID to call, or wait for an incoming call.');
+          } else if (state === 'CHANNEL_ERROR') {
+            setStatus('Could not subscribe to call updates. Check Realtime and table policies.');
+          }
+        });
+    }
+
+    initialize();
+  </script>
+</body>
+</html>
