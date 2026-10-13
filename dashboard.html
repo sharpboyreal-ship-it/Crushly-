@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#fff5f9">
+<title>Discover | CRUSHLY</title>
+
+<style>
+:root{
+  --pink:#ff477e;
+  --pink-light:#fff0f5;
+  --purple:#8b5cf6;
+  --ink:#25172f;
+  --muted:#887b8e;
+  --border:#f0e6ed;
+  --white:#fff;
+  --bg:#fffafd;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+  background:var(--bg);color:var(--ink)
+}
+a{text-decoration:none;color:inherit}
+button,input{font:inherit}
+button{cursor:pointer}
+.topbar{
+  height:76px;background:#fff;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 5%;position:sticky;top:0;z-index:10
+}
+.logo{font-size:27px;font-weight:900;letter-spacing:-1.3px;color:var(--pink)}
+.logo span{color:var(--purple)}
+.search{
+  width:min(360px,35%);padding:13px 18px;border:1px solid var(--border);
+  background:#fffafd;border-radius:30px;outline:none
+}
+.search:focus{border-color:var(--pink)}
+.header-actions{display:flex;align-items:center;gap:13px}
+.header-actions button{
+  width:42px;height:42px;border:1px solid var(--border);
+  background:white;border-radius:50%;font-size:18px
+}
+.user-avatar{
+  width:42px;height:42px;border-radius:50%;display:grid;
+  place-items:center;background:#f6e9ff;font-size:21px
+}
+.layout{
+  max-width:1500px;margin:auto;padding:28px 4%;
+  display:grid;grid-template-columns:225px minmax(0,1fr) 285px;gap:25px
+}
+.left,.right{display:flex;flex-direction:column;gap:18px}
+.box{
+  background:white;border:1px solid var(--border);
+  border-radius:20px;padding:21px
+}
+.mini-profile{text-align:center}
+.avatar-large{
+  width:83px;height:83px;border-radius:50%;
+  margin:0 auto 12px;display:grid;place-items:center;
+  background:linear-gradient(135deg,#ffd0e0,#d8c7ff);font-size:38px
+}
+.mini-profile h3{font-size:17px;margin-bottom:7px}
+.muted{color:var(--muted);font-size:13px;line-height:1.6}
+.member-badge{
+  display:inline-block;background:#fff0f5;color:#dc326c;
+  padding:7px 12px;border-radius:25px;font-size:11px;font-weight:700;margin-top:12px
+}
+.nav{display:flex;flex-direction:column;gap:6px}
+.nav a{
+  display:flex;align-items:center;gap:12px;padding:13px;
+  border-radius:12px;font-size:14px;font-weight:650;transition:.2s
+}
+.nav a:hover,.nav a.active{background:var(--pink-light);color:var(--pink)}
+.premium{
+  background:linear-gradient(140deg,#ff477e,#a45cf5);
+  border-radius:20px;padding:22px;color:white
+}
+.premium h3{font-size:17px;margin-bottom:10px}
+.premium p{font-size:12px;line-height:1.8;opacity:.94}
+.white-btn{
+  display:inline-block;margin-top:16px;background:white;color:#d73578;
+  border:0;border-radius:25px;padding:11px 15px;font-weight:750;font-size:12px
+}
+.welcome{
+  padding:29px;border-radius:23px;
+  background:linear-gradient(120deg,#fff0f6,#f2eaff);
+  display:flex;justify-content:space-between;align-items:center;gap:15px;
+  margin-bottom:24px;overflow:hidden
+}
+.eyebrow{
+  color:#d83774;font-size:11px;letter-spacing:1.4px;
+  font-weight:800;margin-bottom:13px
+}
+.welcome h1{font-size:clamp(25px,3vw,37px);letter-spacing:-1px;margin-bottom:11px}
+.welcome p{font-size:14px;color:#7c6d82;line-height:1.8;max-width:480px}
+.gradient-btn{
+  display:inline-block;margin-top:17px;border:0;border-radius:30px;
+  padding:13px 19px;background:linear-gradient(120deg,var(--pink),var(--purple));
+  color:white;font-weight:750;font-size:13px
+}
+.hero-heart{font-size:75px;filter:drop-shadow(0 12px 20px #c75b9740)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin-bottom:27px}
+.stat{
+  background:white;border:1px solid var(--border);
+  border-radius:16px;padding:17px
+}
+.stat strong{display:block;color:var(--pink);font-size:24px;margin-bottom:6px}
+.stat span{font-size:11px;color:var(--muted)}
+.section-title{
+  display:flex;justify-content:space-between;align-items:center;
+  gap:10px;margin:28px 0 17px
+}
+.section-title h2{font-size:21px;letter-spacing:-.5px}
+.section-title a{font-size:12px;font-weight:750;color:var(--pink)}
+.filters{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:19px}
+.filter{
+  border:1px solid var(--border);background:white;border-radius:25px;
+  padding:9px 14px;font-size:12px;color:#74667c
+}
+.filter.active{background:var(--pink-light);color:var(--pink);border-color:#ffd3e2}
+.profiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.person{
+  min-width:0;background:white;border:1px solid var(--border);
+  border-radius:19px;overflow:hidden;transition:transform .25s,box-shadow .25s
+}
+.person:hover{transform:translateY(-5px);box-shadow:0 14px 32px #52204412}
+.photo{
+  height:190px;display:grid;place-items:center;position:relative;
+  background:linear-gradient(145deg,#ffd1e1,#c9b7ff);font-size:67px
+}
+.photo.two{background:linear-gradient(145deg,#ffdfbf,#ffb9d7)}
+.photo.three{background:linear-gradient(145deg,#bcebe2,#d5c5ff)}
+.photo.four{background:linear-gradient(145deg,#ffd4cc,#ffbfdc)}
+.photo.five{background:linear-gradient(145deg,#d8d0ff,#f9c7e4)}
+.photo.six{background:linear-gradient(145deg,#c4e9ff,#d9ccff)}
+.photo-label{
+  position:absolute;top:11px;left:11px;background:#ffffffed;
+  padding:7px 9px;border-radius:20px;font-size:10px;font-weight:750
+}
+.photo-heart{
+  position:absolute;right:11px;top:11px;width:34px;height:34px;
+  display:grid;place-items:center;border:0;border-radius:50%;
+  background:#ffffffed;font-size:17px
+}
+.person-body{padding:14px}
+.person h3{font-size:15px;margin-bottom:7px}
+.person p{font-size:11px;color:var(--muted);line-height:1.7}
+.person-actions{display:flex;gap:8px;margin-top:13px}
+.person-actions button{
+  flex:1;border:1px solid var(--border);border-radius:10px;
+  padding:10px 4px;background:white;font-size:12px;font-weight:700
+}
+.person-actions .like{background:var(--pink-light);border-color:#ffd5e3;color:var(--pink)}
+.activity-title{font-size:16px;margin-bottom:12px}
+.activity{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid #f6edf3}
+.activity:last-child{border:0}
+.activity-icon{
+  width:40px;height:40px;border-radius:13px;background:var(--pink-light);
+  display:grid;place-items:center;flex-shrink:0
+}
+.activity p{font-size:12px;line-height:1.6}
+.activity small{font-size:11px;color:var(--muted)}
+.tip{margin-top:15px;padding:16px;background:#f7f0ff;border-radius:14px}
+.tip h4{margin-bottom:8px;font-size:13px}
+.tip p{font-size:12px;color:var(--muted);line-height:1.8}
+.notice{margin-top:15px;font-size:13px;color:#c42e68;line-height:1.6}
+.empty{grid-column:1/-1;text-align:center;padding:35px 15px;background:white;border-radius:15px;color:var(--muted)}
+footer{text-align:center;padding:25px;color:var(--muted);font-size:11px;line-height:2}
+footer a{color:var(--pink);margin:0 7px}
+@media(max-width:1150px){
+ .layout{grid-template-columns:200px minmax(0,1fr)}
+ .right{display:none}
+ .profiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:700px){
+ .topbar{height:auto;min-height:70px;padding:13px 5%;flex-wrap:wrap;gap:12px}
+ .logo{font-size:23px}
+ .search{order:3;width:100%}
+ .layout{display:block;padding:18px 4%}
+ .left{margin-bottom:20px}
+ .mini-profile{display:none}
+ .nav{flex-direction:row;overflow-x:auto}
+ .nav a{white-space:nowrap;padding:11px}
+ .left>.premium{display:none}
+ .welcome{padding:22px}
+ .hero-heart{font-size:47px}
+ .stats{gap:8px}
+ .stat{padding:12px}
+ .stat strong{font-size:20px}
+ .stat span{font-size:10px}
+ .profiles{gap:10px}
+ .photo{height:140px;font-size:50px}
+ .person-body{padding:11px}
+ .person h3{font-size:13px}
+ .person-actions button{font-size:10px}
+}
+@media(max-width:350px){.profiles{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="logo" href="index.html">CRUSH<span>LY</span> 💗</a>
+  <input id="search" class="search" type="search" placeholder="🔎 Search interests or profiles..." aria-label="Search profiles">
+  <div class="header-actions">
+    <button aria-label="Notifications" onclick="notify('Notifications will be connected later.')">♧</button>
+    <a class="user-avatar" href="profile.html" aria-label="My profile">👤</a>
+  </div>
+</header>
+
+<div class="layout">
+
+<aside class="left">
+  <div class="box mini-profile">
+    <div class="avatar-large">😊</div>
+    <h3>Your CRUSHLY account</h3>
+    <p class="muted">Your next chapter starts here.</p>
+    <span class="member-badge">♡ FREE MEMBER</span>
+  </div>
+
+  <nav class="box nav">
+    <a class="active" href="dashboard.html">⌂ &nbsp; Discover</a>
+    <a href="profile.html">♙ &nbsp; My Profile</a>
+    <a href="matches.html">♡ &nbsp; Likes & Matches</a>
+    <a href="messages.html">✉ &nbsp; Messages</a>
+    <a href="premium.html">✦ &nbsp; Premium</a>
+    <a href="video-calls.html">▣ &nbsp; Video Calls</a>
+    <a href="index.html">↗ &nbsp; Homepage</a>
+  </nav>
+
+  <div class="premium">
+    <h3>Make more connections ✨</h3>
+    <p>Explore CRUSHLY Premium, planned at KSh 500 per month.</p>
+    <a class="white-btn" href="premium.html">Explore Premium →</a>
+  </div>
+</aside>
+
+<main>
+  <section class="welcome">
+    <div>
+      <div class="eyebrow">WELCOME TO YOUR NEXT CHAPTER</div>
+      <h1>Meet someone<br>who gets you. 💗</h1>
+      <p>Discover new people, find shared interests, and start a conversation that could change everything.</p>
+      <a class="gradient-btn" href="profile.html">Complete Your Profile →</a>
+    </div>
+    <div class="hero-heart">💞</div>
+  </section>
+
+  <div class="stats">
+    <div class="stat"><strong>0</strong><span>YOUR MATCHES</span></div>
+    <div class="stat"><strong>20</strong><span>PLANNED FREE MESSAGES</span></div>
+    <div class="stat"><strong>♡</strong><span>YOUR NEXT CONNECTION</span></div>
+  </div>
+
+  <div class="section-title">
+    <h2>Discover your people</h2>
+    <a href="matches.html">View matches →</a>
+  </div>
+
+  <div class="filters">
+    <button class="filter active" data-filter="all">✨ For you</button>
+    <button class="filter" data-filter="music">🎵 Music lovers</button>
+    <button class="filter" data-filter="travel">✈️ Travel</button>
+    <button class="filter" data-filter="fitness">💪 Fitness</button>
+  </div>
+
+  <div class="profiles" id="profiles">
+
+    <article class="person" data-tags="music travel">
+      <div class="photo">
+        👩🏽
+        <span class="photo-label">SAMPLE PROFILE</span>
+        <button class="photo-heart" aria-label="Like sample profile" onclick="like(this)">♡</button>
+      </div>
+      <div class="person-body">
+        <h3>Alex <span class="muted">· Sample</span></h3>
+        <p>🎵 Music · ✈️ Travel</p>
+        <p>Looking for someone to share new adventures with.</p>
+        <div class="person-actions">
+          <button onclick="pass(this)">✕ Pass</button>
+          <button class="like" onclick="like(this)">♡ Like</button>
+        </div>
+      </div>
+    </article>
+
+    <article class="person" data-tags="cooking movies">
+      <div class="photo two">
+        👨🏽
+        <span class="photo-label">SAMPLE PROFILE</span>
+        <button class="photo-heart" aria-label="Like sample profile" onclick="like(this)">♡</button>
+      </div>
+      <div class="person-body">
+        <h3>Sam <span class="muted">· Sample</span></h3>
+        <p>🍳 Cooking · 🎬 Movies</p>
+        <p>Good food, great movies, and genuine conversations.</p>
+        <div class="person-actions">
+          <button onclick="pass(this)">✕ Pass</button>
+          <button class="like" onclick="like(this)">♡ Like</button>
+        </div>
+      </div>
+    </article>
+
+    <article class="person" data-tags="fitness nature">
+      <div class="photo three">
+        👩🏾
+        <span class="photo-label">SAMPLE PROFILE</span>
+        <button class="photo-heart" aria-label="Like sample profile" onclick="like(this)">♡</button>
+      </div>
+      <div class="person-body">
+        <h3>Jordan <span class="muted">· Sample</span></h3>
+        <p>💪 Fitness · 🌿 Nature</p>
+        <p>Enjoying the outdoors and staying active.</p>
+        <div class="person-actions">
+          <button onclick="pass(this)">✕ Pass</button>
+          <button class="like" onclick="like(this)">♡ Like</button>
+        </div>
+      </div>
+    </article>
+
+    <article class="person" data-tags="travel photography">
+      <div class="photo four">
+        👩🏻
+        <span class="photo-label">SAMPLE PROFILE</span>
+        <button class="photo-heart" aria-label="Like sample profile" onclick="like(this)">♡</button>
+      </div>
+      <div class="person-body">
+        <h3>Taylor <span class="muted">· Sample</span></h3>
+        <p>📸 Photography · ✈️ Travel</p>
+        <p>Always looking for a beautiful new destination.</p>
+        <div class="person-actions">
+          <button onclick="pass(this)">✕ Pass</button>
+          <button class="like" onclick="like(this)">♡ Like</button>
+        </div>
+      </div>
+    </article>
+
+    <article class="person" data-tags="music art">
+      <div class="photo five">
+        👨🏻
+        <span class="photo-label">SAMPLE PROFILE</span>
+        <button class="photo-heart" aria-label="Like sample profile" onclick="like(this)">♡</button>
+      </div>
+      <div class="person-body">
+        <h3>Riley <span class="muted">· Sample</span></h3>
+        <p>🎶 Music · 🎨 Art</p>
+        <p>Creative soul who appreciates the little things.</p>
+        <div class="person-actions">
+          <button onclick="pass(this)">✕ Pass</button>
+          <button class="like" onclick="like(this)">♡ Like</button>
+        </div>
+      </div>
+    </article>
+
+    <article class="person" data-tags="fitness travel">
+      <div class="photo six">
+        👩🏿
+        <span class="photo-label">SAMPLE PROFILE</span>
+        <button class="photo-heart" aria-label="Like sample profile" onclick="like(this)">♡</button>
+      </div>
+      <div class="person-body">
+        <h3>Morgan <span class="muted">· Sample</span></h3>
+        <p>🏃 Fitness · 🌍 Travel</p>
+        <p>Looking for laughter, kindness, and new experiences.</p>
+        <div class="person-actions">
+          <button onclick="pass(this)">✕ Pass</button>
+          <button class="like" onclick="like(this)">♡ Like</button>
+        </div>
+      </div>
+    </article>
+
+  </div>
+
+  <p id="notice" class="notice" role="status" aria-live="polite"></p>
+</main>
+
+<aside class="right">
+  <div class="box">
+    <h3 class="activity-title">Your activity</h3>
+    <div class="activity">
+      <div class="activity-icon">♡</div>
+      <div><p><strong>People who like you</strong></p><small>Available after launch</small></div>
+    </div>
+    <div class="activity">
+      <div class="activity-icon">✉</div>
+      <div><p><strong>New messages</strong></p><small>Available after launch</small></div>
+    </div>
+    <div class="activity">
+      <div class="activity-icon">💞</div>
+      <div><p><strong>Your matches</strong></p><small>Available after launch</small></div>
+    </div>
+  </div>
+
+  <div class="box">
+    <h3>💡 A little dating advice</h3>
+    <div class="tip">
+      <h4>Keep it genuine.</h4>
+      <p>Use authentic photos, protect your personal information, and never send money to someone you have only met online.</p>
+    </div>
+  </div>
+
+  <div class="premium">
+    <h3>CRUSHLY Premium ⭐</h3>
+    <p>Explore the planned KSh 500 monthly membership and KSh 300 unlimited messaging plan.</p>
+    <a href="premium.html" class="white-btn">View Memberships →</a>
+  </div>
+</aside>
+
+</div>
+
+<footer>
+  <p>© <span id="year"></span> CRUSHLY · For adults aged 18 and over.</p>
+  <p><a href="privacy.html">Privacy</a> · <a href="safety.html">Safety</a> · <a href="terms.html">Terms</a></p>
+</footer>
+
+<script type="module">
+import { supabase } from "./js/supabase.js";
+
+const authBar = document.createElement("div");
+authBar.id = "crushlyAuthStatus";
+authBar.style.cssText = "padding:12px 5%;background:#fff0f5;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;";
+authBar.innerHTML = '<span id="crushlyUserEmail">Checking account...</span><button id="crushlySignOut" type="button" style="border:0;border-radius:20px;padding:9px 16px;background:#ff477e;color:white;font-weight:bold;">Sign out</button>';
+document.body.prepend(authBar);
+
+const signOutButton = document.getElementById("crushlySignOut");
+
+signOutButton.addEventListener("click", async () => {
+  signOutButton.disabled = true;
+  try {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+    location.replace("login.html");
+  } catch (error) {
+    signOutButton.disabled = false;
+    alert("Sign out failed. Please try again.");
+  }
+});
+
+const { data, error } = await supabase.auth.getSession();
+
+if (error || !data.session) {
+  location.replace("login.html");
+} else {
+  document.getElementById("crushlyUserEmail").textContent =
+    "Signed in as " + data.session.user.email;
+}
+
+supabase.auth.onAuthStateChange((event) => {
+  if (event === "SIGNED_OUT") location.replace("login.html");
+});
+
+document.getElementById("year").textContent = new Date().getFullYear();
+
+function notify(message) {
+  document.getElementById("notice").textContent = message;
+}
+
+function like(button) {
+  notify("Design preview only: likes will be saved when real accounts are connected.");
+  if (button.dataset.liked === "true") {
+    button.dataset.liked = "false";
+    button.textContent = "♡ Like";
+    button.style.color = "";
+  } else {
+    button.dataset.liked = "true";
+    button.textContent = "♥ Liked";
+    button.style.color = "#ff477e";
+  }
+}
+
+function pass(button) {
+  const card = button.closest(".person");
+  card.style.display = "none";
+  notify("Sample profile hidden. Real profile recommendations will be connected later.");
+}
+
+document.getElementById("search").addEventListener("input", filterProfiles);
+
+document.querySelectorAll("[data-filter]").forEach(button => {
+  button.addEventListener("click", () => {
+    document.querySelectorAll("[data-filter]").forEach(item => item.classList.remove("active"));
+    button.classList.add("active");
+    filterProfiles();
+  });
+});
+
+function filterProfiles() {
+  const query = document.getElementById("search").value.toLowerCase().trim();
+  const category = document.querySelector("[data-filter].active").dataset.filter;
+  let visible = 0;
+
+  document.querySelectorAll(".person").forEach(card => {
+    const text = (card.textContent + " " + card.dataset.tags).toLowerCase();
+    const matchesText = text.includes(query);
+    const matchesCategory = category === "all" || card.dataset.tags.split(" ").includes(category);
+    const show = matchesText && matchesCategory;
+
+    card.style.display = show ? "" : "none";
+    if (show) visible++;
+  });
+
+  let empty = document.getElementById("emptyState");
+
+  if (visible === 0) {
+    if (!empty) {
+      empty = document.createElement("div");
+      empty.id = "emptyState";
+      empty.className = "empty";
+      empty.textContent = "No sample profiles found. Try another search or category.";
+      document.getElementById("profiles").appendChild(empty);
+    }
+  } else if (empty) {
+    empty.remove();
+  }
+}
+</script>
+
+</body>
+</html>
