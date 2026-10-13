@@ -164,8 +164,15 @@ async function loadProfile() {
     bio.value = profile.bio || "";
     document.getElementById("bioCount").textContent = bio.value.length;
     if (profile.avatar_url) {
-      avatarPreview.src = profile.avatar_url;
       currentAvatarPath = profile.avatar_url;
+
+      const { data: signedData, error: signedError } = await supabase.storage
+        .from("profile-photos")
+        .createSignedUrl(currentAvatarPath, 3600);
+
+      if (!signedError && signedData?.signedUrl) {
+        avatarPreview.src = signedData.signedUrl;
+      }
     }
   }
 }
@@ -210,13 +217,17 @@ form.addEventListener("submit", async (event) => {
         throw new Error("Photo upload failed. Create the profile-photos storage bucket in Supabase and check its upload policies, then try again.");
       }
 
-      const { data: urlData } = supabase.storage
+      const { data: signedData, error: signedError } = await supabase.storage
         .from("profile-photos")
-        .getPublicUrl(path);
+        .createSignedUrl(path, 3600);
 
-      avatarUrl = urlData.publicUrl;
-      currentAvatarPath = avatarUrl;
-      avatarPreview.src = avatarUrl;
+      if (signedError || !signedData?.signedUrl) {
+        throw new Error("Photo uploaded, but its preview link could not be created. Please try saving again.");
+      }
+
+      avatarUrl = path;
+      currentAvatarPath = path;
+      avatarPreview.src = signedData.signedUrl;
     }
 
     const { error: saveError } = await supabase.from("profiles").upsert({
