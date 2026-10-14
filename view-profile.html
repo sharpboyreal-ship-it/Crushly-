@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Member Profile | CRUSHLY</title>
+<style>
+:root{--pink:#ff397b;--purple:#762bdb;--bg:#fff7fa;--text:#292338}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:var(--text)}
+header{background:white;padding:16px 6%;display:flex;justify-content:space-between;align-items:center;gap:15px;box-shadow:0 2px 12px #0001}
+.logo{font-size:26px;font-weight:900;color:var(--pink)}
+nav{display:flex;gap:15px;flex-wrap:wrap}
+nav a{color:#51485f;text-decoration:none;font-weight:bold;font-size:14px}
+main{max-width:850px;margin:35px auto;padding:0 18px}
+.card{background:white;border-radius:22px;overflow:hidden;box-shadow:0 8px 30px #44213a10}
+.cover{height:12px;background:linear-gradient(90deg,var(--pink),var(--purple))}
+.content{padding:28px}
+.photo{display:block;width:190px;height:190px;border-radius:50%;object-fit:cover;margin:0 auto 22px;background:#fce6ef;border:5px solid white;box-shadow:0 4px 18px #0001}
+h1{text-align:center;margin:8px 0;font-size:30px}
+.meta{text-align:center;color:#786b7b;margin:9px 0}
+.bio{line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere;background:#fff7fa;padding:18px;border-radius:14px;margin-top:25px}
+.actions{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:25px}
+.button{display:inline-block;padding:13px 20px;border-radius:12px;background:var(--pink);color:white;text-decoration:none;font-weight:bold;border:0;cursor:pointer}
+.secondary{background:#fce6ef;color:#b7225b}
+#status{text-align:center;padding:25px;color:#766879}
+footer{text-align:center;padding:25px;color:#8a7c8c;font-size:13px}
+@media(max-width:550px){header{align-items:flex-start;flex-direction:column}.content{padding:22px}.photo{width:160px;height:160px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">💗 CRUSHLY</div>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="discover.html">Discover</a>
+    <a href="messages.html">Messages</a>
+  </nav>
+</header>
+
+<main>
+  <div class="card">
+    <div class="cover"></div>
+    <div class="content">
+      <p id="status">Loading member profile...</p>
+      <div id="profile" hidden>
+        <img id="photo" class="photo" alt="Member profile photo">
+        <h1 id="name"></h1>
+        <p id="location" class="meta"></p>
+        <div class="bio" id="bio"></div>
+        <div class="actions">
+          <a id="message" class="button" href="messages.html">💬 Message</a>
+          <a id="videoCall" class="button" href="video-call.html" style="background:#e94057;">🎥 Video Call — KSh 130 / 10 min</a>
+          <a href="discover.html" class="button secondary">❤️ Discover more</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>CRUSHLY © 2026 · Respect each member's privacy.</footer>
+
+<script type="module">
+import { supabase } from './js/supabase.js';
+
+const status = document.getElementById('status');
+const panel = document.getElementById('profile');
+
+function safeText(value) {
+  return String(value ?? '');
+}
+
+function ageFromDate(value) {
+  if (!value) return null;
+  const birth = new Date(value + 'T00:00:00');
+  if (Number.isNaN(birth.getTime())) return null;
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  if (today.getMonth() < birth.getMonth() ||
+      (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())) age--;
+  return age >= 18 && age <= 120 ? age : null;
+}
+
+async function loadPhoto(path) {
+  if (!path) return 'https://placehold.co/400x400/fce6ef/762bdb?text=CRUSHLY';
+  if (/^https?:\/\//i.test(path)) return path;
+
+  const { data, error } = await supabase.storage
+    .from('profile-photos')
+    .createSignedUrl(path, 3600);
+
+  if (error || !data?.signedUrl) {
+    return 'https://placehold.co/400x400/fce6ef/762bdb?text=CRUSHLY';
+  }
+  return data.signedUrl;
+}
+
+async function init() {
+  try {
+    const { data: auth, error: authError } = await supabase.auth.getUser();
+    if (authError) throw authError;
+    if (!auth.user) {
+      status.textContent = 'Please sign in to view member profiles.';
+      return;
+    }
+
+    const memberId = new URLSearchParams(location.search).get('id');
+    if (!memberId) {
+      status.textContent = 'No member was selected. Return to Discover and choose a profile.';
+      return;
+    }
+
+    if (memberId === auth.user.id) {
+      status.textContent = 'This is your own account. Open My Profile to edit your details.';
+      return;
+    }
+
+    const { data: member, error } = await supabase
+      .from('profiles')
+      .select('id,display_name,birth_date,location,bio,avatar_url')
+      .eq('id', memberId)
+      .maybeSingle();
+
+    if (error) throw error;
+    if (!member) {
+      status.textContent = 'This profile is unavailable or you do not have permission to view it.';
+      return;
+    }
+
+    const age = ageFromDate(member.birth_date);
+    if (age === null) {
+      status.textContent = 'This profile is unavailable for discovery.';
+      return;
+    }
+
+    document.getElementById('name').textContent =
+      (member.display_name || 'CRUSHLY Member') + ', ' + age;
+    document.getElementById('location').textContent =
+      '📍 ' + (member.location || 'Location not provided');
+    document.getElementById('bio').textContent =
+      member.bio || 'This member has not added a bio yet.';
+
+    const photo = document.getElementById('photo');
+    photo.src = await loadPhoto(member.avatar_url);
+    photo.onerror = () => {
+      photo.onerror = null;
+      photo.src = 'https://placehold.co/400x400/fce6ef/762bdb?text=CRUSHLY';
+    };
+
+    // Pass the selected member ID to the messaging page.
+    document.getElementById('message').href =
+      'messages.html?recipient=' + encodeURIComponent(member.id);
+
+    // Open a video call with the selected member.
+    document.getElementById('videoCall').href =
+      'video-call.html?recipient=' + encodeURIComponent(member.id);
+
+    status.hidden = true;
+    panel.hidden = false;
+  } catch (error) {
+    console.error(error);
+    status.textContent = 'Could not load this profile. Check your Supabase connection and profile access policies.';
+  }
+}
+
+init();
+</script>
+</body>
+</html>

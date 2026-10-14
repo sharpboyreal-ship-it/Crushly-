@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#ff397b">
+<meta name="description" content="CRUSHLY helps adults discover meaningful connections.">
+<title>CRUSHLY — Find Your Connection</title>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --pink: #ff397b;
+  --purple: #7928ca;
+  --dark: #21152d;
+  --light: #fff4f8;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: #fff;
+  color: var(--dark);
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 7%;
+  background: white;
+  box-shadow: 0 2px 15px #0000000c;
+}
+
+.logo {
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--pink);
+  letter-spacing: -1px;
+}
+
+nav a {
+  text-decoration: none;
+  color: var(--dark);
+  margin-left: 22px;
+  font-weight: bold;
+}
+
+.button {
+  display: inline-block;
+  padding: 13px 23px;
+  border-radius: 30px;
+  text-decoration: none;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+}
+
+.primary {
+  background: linear-gradient(135deg, var(--pink), var(--purple));
+  color: white;
+}
+
+.secondary {
+  color: var(--pink);
+  border: 2px solid var(--pink);
+  background: white;
+}
+
+.hero {
+  min-height: 590px;
+  padding: 75px 8%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 45px;
+  background: linear-gradient(135deg, #fff4f8, #f6edff);
+}
+
+.hero-text {
+  max-width: 570px;
+}
+
+.tag {
+  display: inline-block;
+  background: #ffe0ec;
+  color: #bc205a;
+  padding: 10px 16px;
+  border-radius: 30px;
+  font-size: 13px;
+  font-weight: bold;
+  margin-bottom: 23px;
+}
+
+h1 {
+  font-size: clamp(42px, 6vw, 70px);
+  line-height: 1.05;
+  letter-spacing: -2px;
+  margin-bottom: 24px;
+}
+
+h1 span {
+  color: var(--pink);
+}
+
+.hero-text p {
+  font-size: 18px;
+  line-height: 1.8;
+  color: #6c6173;
+  margin-bottom: 30px;
+}
+
+.hero-buttons {
+  display: flex;
+  gap: 13px;
+  flex-wrap: wrap;
+}
+
+.hero-image {
+  width: 360px;
+  min-height: 390px;
+  flex-shrink: 0;
+  border-radius: 180px 180px 30px 30px;
+  background: linear-gradient(145deg, #ffb7d0, #bca4ff);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  box-shadow: 0 25px 70px #8c43a322;
+}
+
+.heart {
+  font-size: 145px;
+  filter: drop-shadow(0 15px 20px #8e225044);
+}
+
+.floating {
+  position: absolute;
+  background: white;
+  border-radius: 18px;
+  padding: 15px;
+  box-shadow: 0 8px 30px #00000012;
+  font-weight: bold;
+}
+
+.floating.one {
+  top: 55px;
+  left: -35px;
+}
+
+.floating.two {
+  bottom: 55px;
+  right: -35px;
+}
+
+section {
+  padding: 75px 8%;
+}
+
+.section-heading {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.section-heading h2 {
+  font-size: 36px;
+  margin-bottom: 12px;
+}
+
+.section-heading p {
+  color: #766b7b;
+  line-height: 1.7;
+}
+
+.features {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 25px;
+}
+
+.card {
+  padding: 30px;
+  border: 1px solid #f2e7ef;
+  border-radius: 22px;
+  box-shadow: 0 10px 35px #3b123508;
+}
+
+.icon {
+  font-size: 38px;
+  margin-bottom: 20px;
+}
+
+.card h3 {
+  margin-bottom: 13px;
+}
+
+.card p {
+  color: #766b7b;
+  line-height: 1.7;
+}
+
+.pricing {
+  background: var(--light);
+}
+
+.price-card {
+  max-width: 480px;
+  margin: auto;
+  background: white;
+  border-radius: 25px;
+  padding: 38px;
+  text-align: center;
+  border: 2px solid #ffb6d0;
+  box-shadow: 0 15px 45px #8e225010;
+}
+
+.price {
+  color: var(--pink);
+  font-size: 40px;
+  font-weight: 900;
+  margin: 22px 0;
+}
+
+.price-card p {
+  margin-bottom: 18px;
+  color: #766b7b;
+}
+
+.price-card ul {
+  list-style: none;
+  line-height: 2.3;
+  margin-bottom: 25px;
+}
+
+.cta {
+  text-align: center;
+  background: linear-gradient(135deg, #ff397b, #7928ca);
+  color: white;
+}
+
+.cta p {
+  margin: 15px auto 25px;
+  max-width: 500px;
+  line-height: 1.8;
+}
+
+.cta .button {
+  background: white;
+  color: var(--pink);
+}
+
+footer {
+  text-align: center;
+  padding: 30px 15px;
+  color: #766b7b;
+  line-height: 2;
+}
+
+footer a {
+  color: var(--pink);
+  margin: 0 8px;
+}
+
+@media(max-width: 800px) {
+  header {
+    padding: 18px 5%;
+  }
+
+  nav a:not(.nav-signup) {
+    display: none;
+  }
+
+  nav a {
+    margin-left: 8px;
+  }
+
+  .logo {
+    font-size: 23px;
+  }
+
+  .hero {
+    flex-direction: column;
+    padding: 60px 7%;
+    text-align: center;
+  }
+
+  .hero-buttons {
+    justify-content: center;
+  }
+
+  .hero-image {
+    width: min(300px, 85%);
+    min-height: 310px;
+    margin: 10px auto;
+  }
+
+  .features {
+    grid-template-columns: 1fr;
+  }
+
+  section {
+    padding: 60px 7%;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo">💗 CRUSHLY</div>
+  <nav>
+    <a href="#features">Features</a>
+    <a href="#pricing">Pricing</a>
+    <a href="login.html">Log in</a>
+    <a class="button primary nav-signup" href="signup.html">Join Free</a>
+  </nav>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="hero-text">
+      <div class="tag">💖 YOUR NEXT CHAPTER STARTS HERE</div>
+      <h1>Real people.<br>Real feelings.<br><span>Real connections.</span></h1>
+      <p>
+        Meet new people, discover meaningful connections, and find
+        someone who makes your heart smile. Your story could start today.
+      </p>
+      <div class="hero-buttons">
+        <a class="button primary" href="signup.html">Create Free Account →</a>
+        <a class="button secondary" href="#features">Explore CRUSHLY</a>
+      </div>
+    </div>
+
+    <div class="hero-image" aria-label="Romantic heart illustration">
+      <div class="heart">💗</div>
+      <div class="floating one">✨ Your person is out there</div>
+      <div class="floating two">💕 Start with a hello</div>
+    </div>
+  </section>
+
+  <section id="features">
+    <div class="section-heading">
+      <h2>Love starts with a connection</h2>
+      <p>Everything you need to take the first step.</p>
+    </div>
+
+    <div class="features">
+      <article class="card">
+        <div class="icon">👥</div>
+        <h3>Discover People</h3>
+        <p>Create your profile and explore people who are looking for meaningful connections.</p>
+      </article>
+
+      <article class="card">
+        <div class="icon">💌</div>
+        <h3>Start Chatting</h3>
+        <p>Enjoy your first 20 messages for free and get to know your potential match.</p>
+      </article>
+
+      <article class="card">
+        <div class="icon">📹</div>
+        <h3>Face-to-Face Calls</h3>
+        <p>When you are ready, connect face-to-face through our planned paid video-call feature.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="pricing" id="pricing">
+    <div class="section-heading">
+      <h2>Choose your CRUSHLY experience</h2>
+      <p>Start for free and upgrade whenever you're ready.</p>
+    </div>
+
+    <div class="price-card">
+      <h3>CRUSHLY Premium</h3>
+      <div class="price">KSh 500 <small style="font-size:15px">/ month</small></div>
+      <p>For people who want more from their connections.</p>
+      <ul>
+        <li>✓ Free account registration</li>
+        <li>✓ Browse profiles for free</li>
+        <li>✓ First 20 messages free</li>
+        <li>✓ Premium membership — KSh 500/month</li>
+        <li>✓ Unlimited messaging — KSh 300/month</li>
+        <li>✓ Video calls — KSh 130 per 10 minutes</li>
+      </ul>
+      <a class="button primary" href="signup.html">Get Started Free</a>
+    </div>
+  </section>
+
+  <section class="cta">
+    <h2>Your next connection could be one click away.</h2>
+    <p>Join CRUSHLY and take the first step toward meeting someone new.</p>
+    <a href="signup.html" class="button">Create Your Free Account</a>
+  </section>
+</main>
+
+<footer>
+  <div class="logo">💗 CRUSHLY</div>
+  <p>Made for meaningful connections.</p>
+  <p>
+    <a href="privacy.html">Privacy</a>
+    <a href="safety.html">Safety</a>
+    <a href="terms.html">Terms</a>
+  </p>
+  <p>© <span id="year"></span> CRUSHLY. All rights reserved.</p>
+  <p>For adults aged 18 and over.</p>
+</footer>
+
+<script>
+document.getElementById("year").textContent = new Date().getFullYear();
+</script>
+
+</body>
+</html>

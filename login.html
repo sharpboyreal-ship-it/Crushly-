@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Log In — CRUSHLY</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:linear-gradient(135deg,#fff1f7,#f1e8ff);min-height:100vh;display:flex;justify-content:center;align-items:center;padding:20px;color:#29172f}
+.card{background:white;padding:35px;border-radius:24px;width:100%;max-width:430px;box-shadow:0 15px 50px #7928ca18}
+.logo{text-align:center;color:#ff397b;font-size:30px;font-weight:900}
+h1{text-align:center;margin-top:25px}
+p{text-align:center;color:#776a7c;line-height:1.6}
+label{display:block;font-weight:bold;margin:18px 0 7px}
+input{width:100%;padding:14px;border:1px solid #e4dce8;border-radius:10px;font-size:15px}
+button{width:100%;border:0;background:linear-gradient(135deg,#ff397b,#7928ca);color:white;padding:15px;border-radius:12px;font-size:16px;font-weight:bold;cursor:pointer;margin-top:23px}
+a{color:#e52e70}
+#message{overflow-wrap:anywhere}
+</style>
+</head>
+<body>
+<div class="card">
+<div class="logo">💗 CRUSHLY</div>
+<h1>Welcome back!</h1>
+<p>Log in to continue your journey.</p>
+
+<form id="loginForm">
+<label for="email">Email address</label>
+<input id="email" type="email" autocomplete="email" required>
+
+<label for="password">Password</label>
+<input id="password" type="password" autocomplete="current-password" required>
+
+<button id="submitButton" type="submit">Log In</button>
+<p id="message" role="status" aria-live="polite"></p>
+</form>
+
+<p><a href="index.html">← Back to homepage</a></p>
+<p>New to CRUSHLY? <a href="signup.html">Create a free account</a></p>
+</div>
+
+<script type="module">
+const form = document.getElementById("loginForm");
+const message = document.getElementById("message");
+const button = document.getElementById("submitButton");
+
+form.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  button.disabled = true;
+  message.textContent = "Signing in...";
+
+  try {
+    const { supabase } = await import("./js/supabase.js");
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email: document.getElementById("email").value.trim(),
+      password: document.getElementById("password").value
+    });
+
+    if (error) throw error;
+
+    message.textContent = "Login successful! Opening your dashboard...";
+    setTimeout(() => location.href = "dashboard.html", 1000);
+  } catch (error) {
+    message.textContent = error.message === "Failed to fetch"
+      ? "Cannot connect to account services. Check your Supabase configuration and internet connection."
+      : error.message || "Login failed. Please try again.";
+  } finally {
+    button.disabled = false;
+  }
+});
+</script>
+</body>
+</html>

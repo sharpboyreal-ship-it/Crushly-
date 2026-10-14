@@ -214,7 +214,8 @@ form.addEventListener("submit", async (event) => {
         .upload(path, file, { upsert: true, contentType: file.type });
 
       if (uploadError) {
-        throw new Error("Photo upload failed. Create the profile-photos storage bucket in Supabase and check its upload policies, then try again.");
+        console.error("CRUSHLY photo upload error:", uploadError);
+        throw new Error("Photo upload failed: " + uploadError.message);
       }
 
       const { data: signedData, error: signedError } = await supabase.storage
